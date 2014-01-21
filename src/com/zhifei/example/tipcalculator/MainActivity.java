@@ -4,10 +4,16 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
@@ -16,12 +22,23 @@ public class MainActivity extends Activity {
 	private double totalAmount;
 	private String tipAmountText;
 	private final int REQUEST_CODE = 86;
+	private Spinner spinPercentage;
+	private ArrayAdapter<CharSequence> sPercentageAdapter;
+	
+	private final String TIP_AMOUNT_DEFAULT = "0.00";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activitymain);
         etTotalAmount = (EditText) findViewById(R.id.etTotalAmount);
+        etTotalAmount.addTextChangedListener(new totalAmountWatcher());
         tvTipAmount = (TextView) findViewById(R.id.tvTipAmount);
+        spinPercentage = (Spinner) findViewById(R.id.spinPercentage);
+        sPercentageAdapter = ArrayAdapter.createFromResource(this, R.array.percentage_array, android.R.layout.simple_spinner_dropdown_item);
+       
+        spinPercentage.setAdapter(sPercentageAdapter);
+        
+        setupSpinPercentageListener();
         setupTipAmountListener();
     }
 
@@ -33,11 +50,11 @@ public class MainActivity extends Activity {
         return true;
     }
     
-    private double getTotalAmount(){
+    private float getTotalAmount(){
     	String fieldValue = etTotalAmount.getText().toString();
-    	double ret = 0.00;
+    	float ret = 0f;
     	try{
-    		ret = Double.parseDouble(fieldValue);
+    		ret = Float.parseFloat(fieldValue);
     	} catch(NumberFormatException e){
     		e.printStackTrace();
     	}
@@ -67,6 +84,43 @@ public class MainActivity extends Activity {
     	tvTipAmount.setText(tipAmountText);
 	}
 	
+	private void setupSpinPercentageListener(){
+		spinPercentage.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> spinAdapter, View view,
+					int pos, long id) {
+				// TODO Auto-generated method stub
+				totalAmount = getTotalAmount();
+				float tipPercentage = getTipPercentageFromSpiner(spinPercentage);
+				tipAmountText = String.format("%.2f", totalAmount * tipPercentage) ;
+		    	tvTipAmount.setText(tipAmountText);
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> spinAdapter) {
+				// TODO Auto-generated method stub
+				tvTipAmount.setText(TIP_AMOUNT_DEFAULT);
+			}
+		});
+	}
+	
+	private float getTipPercentageFromSpiner(AdapterView<?> spinAdapter){
+		
+		String selectedPercentage = spinAdapter.getSelectedItem().toString();
+		float tipPercentage;
+		if(selectedPercentage.equals("10%")){
+			tipPercentage = 0.1f;
+		}else if(selectedPercentage.equals("15%")){
+			tipPercentage = 0.15f;
+		}else if(selectedPercentage.equals("20%")){
+			tipPercentage = 0.2f;
+		}else{
+			tipPercentage = 0f;
+		}
+		return tipPercentage;
+	}
+	
 	private void setupTipAmountListener(){
 		tvTipAmount.setOnClickListener(new OnClickListener() {
 			@Override
@@ -87,5 +141,33 @@ public class MainActivity extends Activity {
     		tvTipAmount.setText(tipAmountText);
     	}
     }
+	
+	private class totalAmountWatcher implements TextWatcher{
+
+		@Override
+		public void afterTextChanged(Editable s) {
+			// TODO Auto-generated method stub
+			totalAmount = getTotalAmount();
+			float tipPercentage = getTipPercentageFromSpiner(spinPercentage);
+			tipAmountText = String.format("%.2f", totalAmount * tipPercentage) ;
+	    	tvTipAmount.setText(tipAmountText);
+			
+		}
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			// TODO Auto-generated method stub
+			
+		}
+			
+	}
     
 }

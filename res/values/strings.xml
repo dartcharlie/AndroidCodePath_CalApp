@@ -13,5 +13,10 @@
     <string name="title_activity_edit_tip">EditTipActivity</string>
     <string name="text_edit_tip">Set New Tip Amount</string>
     <string name="text_dollar_sign">$</string>
+    <string-array name="percentage_array">
+        <item >10%</item>
+        <item >15%</item>
+        <item >20%</item>
+    </string-array>
 
 </resources>
